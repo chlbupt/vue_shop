@@ -20,6 +20,12 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "d
 // 引入全局样式
 // 引入axios
 _axios["default"].defaults.baseURL = 'http://127.0.0.1:8888/api/private/v1/';
+
+_axios["default"].interceptors.request.use(function (config) {
+  config.headers.Authorization = window.sessionStorage.getItem('token');
+  return config;
+});
+
 _vue["default"].prototype.$http = _axios["default"];
 _vue["default"].config.productionTip = false;
 new _vue["default"]({
