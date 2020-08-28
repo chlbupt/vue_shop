@@ -47,3 +47,5 @@ _vue["default"].use(_elementUi.TableColumn);
 _vue["default"].use(_elementUi.Switch);
 
 _vue["default"].use(_elementUi.Tooltip);
+
+_vue["default"].use(_elementUi.Pagination);
