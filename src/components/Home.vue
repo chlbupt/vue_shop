@@ -13,7 +13,7 @@
             <div class="toggle-button" @click="toggleCollapse">
               |||
             </div>
-            <el-menu background-color="#333744" text-color="#fff" active-text-color="#409bff" unique-opened :collapse-transition="false" :collapse="isCollapse"	>
+            <el-menu background-color="#333744" text-color="#fff" active-text-color="#409bff" unique-opened :collapse-transition="false" :collapse="isCollapse"	router :default-active="activePath">
             <!--一级菜单 -->
               <el-submenu :index="item.id+''" v-for="item in menulist" :key="item.id">
                 <!-- 一级菜单模板区 -->
@@ -22,7 +22,7 @@
                   <span>{{item.authName}}</span>
                 </template>
                 <!-- 二级菜单 -->
-                <el-menu-item :index="subMenu.id+''" v-for="subMenu in item.children" :key="subMenu.id">
+                <el-menu-item :index="`/${subMenu.path}`" v-for="subMenu in item.children" :key="subMenu.id" @click="saveNavStatus(`/${subMenu.path}`)">
                   <template slot="title">
                     <i class="el-icon-menu"></i>
                     <span>{{subMenu.authName}}</span>
@@ -31,7 +31,9 @@
               </el-submenu>
             </el-menu>
           </el-aside>
-          <el-main>main</el-main>
+          <el-main>
+            <router-view></router-view>
+          </el-main>
         </el-container>
       </el-container>
 </template>
@@ -49,10 +51,12 @@ export default {
         '145': 'iconfont icon-baobiao'
       },
       isCollapse: false,
+      activePath: '',
     }
   },
   created() {
     this.getMenuList()
+    this.activePath = window.sessionStorage.getItem('activePath')
   },
   methods: {
     logout() {
@@ -68,8 +72,13 @@ export default {
       this.menulist = res.data
     },
     // 折叠菜单
-    toggleCollapse(){
+    toggleCollapse() {
       this.isCollapse = !this.isCollapse
+    },
+    // 保存菜单激活状态
+    saveNavStatus(navPath) {
+      window.sessionStorage.setItem('activePath', navPath)
+      this.activePath = navPath
     }
   }
 }
@@ -111,11 +120,11 @@ export default {
 .iconfont {
   margin-right: 10px;
 }
-.toggle-button{
+.toggle-button {
   background-color: #4a5064;
   font-size: 10px;
   line-height: 24px;
-  color:#fff;
+  color: #fff;
   text-align: center;
   letter-spacing: 0.2em;
   cursor: pointer;
