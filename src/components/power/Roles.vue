@@ -1,4 +1,5 @@
 <template>
+import { log } from 'util';
     <div>
         <!-- 面包屑导航 -->
         <el-breadcrumb separator-class="el-icon-arrow-right">
@@ -18,7 +19,36 @@
             </el-row>
             <!-- 角色列表区域 -->
             <el-table :data="roleList" border stripe>
-                <el-table-column type="expand"></el-table-column>
+                <el-table-column type="expand">
+                    <template slot-scope="scope">
+                        <el-row v-for="(item1, i1) in scope.row.children" :key="item1.id" :class="['bdbottom', i1 == 0 ? 'bdtop' : '', 'vcenter']">
+                            <!-- 一级权限 -->
+                            <el-col :span="5">
+                                <el-tag>{{item1.authName}}</el-tag>
+                                <i class="el-icon-caret-right"></i>
+                            </el-col>
+                            <!-- 二级和三级权限 -->
+                            <el-col :span="19">
+                                <!-- 二级权限 -->
+                                <el-row v-for="(item2, i2) in item1.children" :key="item2.id" :class="[i2 == 0 ? '' : 'bdtop', 'vcenter']">
+                                    <el-col :span="6">
+                                        <el-tag type="success">{{item2.authName}}</el-tag>
+                                        <i class="el-icon-caret-right"></i>
+                                    </el-col>
+                                    <!-- 三级权限 -->
+                                    <el-col :span="18">
+                                        <el-tag 
+                                        closable
+                                        type="warning" v-for="(item3, i3) in item2.children" :key="item3.id"
+                                        @close="removeRightById(item3.id)">
+                                            {{item3.authName}}
+                                        </el-tag>
+                                    </el-col>
+                                </el-row>
+                            </el-col>
+                        </el-row>
+                    </template>
+                </el-table-column>
                 <el-table-column type="index"></el-table-column>
                 <el-table-column label="角色名称" prop="roleName"></el-table-column>
                 <el-table-column label="角色描述" prop="roleDesc"></el-table-column>
@@ -54,11 +84,38 @@ export default {
             }
 
             this.roleList = res.data
-            console.log(this.roleList)
+        },
+        async removeRightById(rightId){
+            const confirmResult = await this.$confirm('此操作将永久删除该权限, 是否继续?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+            }).catch(err => err)
+
+            console.log(confirmResult);return;
+            if(confirmResult != 'confirm'){
+                return this.$message.info('取消了删除')
+            }
+
+            this.$message.success('确认删除')
         }
     }
 }
 </script>
 
 <style lang="less" scoped>
+.el-tag {
+  margin: 7px;
+}
+.bdtop {
+  border-top: 1px solid #eee;
+}
+
+.bdbottom {
+  border-bottom: 1px solid #eee;
+}
+.vcenter {
+  display: flex;
+  align-items: center;
+}
 </style>
