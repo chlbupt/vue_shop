@@ -1,5 +1,4 @@
 <template>
-import { log } from 'util';
     <div>
         <!-- 面包屑导航 -->
         <el-breadcrumb separator-class="el-icon-arrow-right">
@@ -24,7 +23,8 @@ import { log } from 'util';
                         <el-row v-for="(item1, i1) in scope.row.children" :key="item1.id" :class="['bdbottom', i1 == 0 ? 'bdtop' : '', 'vcenter']">
                             <!-- 一级权限 -->
                             <el-col :span="5">
-                                <el-tag>{{item1.authName}}</el-tag>
+                                <el-tag closable
+                                        @close="removeRightById(scope.row,item1.id)">{{item1.authName}}</el-tag>
                                 <i class="el-icon-caret-right"></i>
                             </el-col>
                             <!-- 二级和三级权限 -->
@@ -32,15 +32,18 @@ import { log } from 'util';
                                 <!-- 二级权限 -->
                                 <el-row v-for="(item2, i2) in item1.children" :key="item2.id" :class="[i2 == 0 ? '' : 'bdtop', 'vcenter']">
                                     <el-col :span="6">
-                                        <el-tag type="success">{{item2.authName}}</el-tag>
+                                        <el-tag type="success"
+                                        closable
+                                        @close="removeRightById(scope.row,item2.id)"
+                                        >{{item2.authName}}</el-tag>
                                         <i class="el-icon-caret-right"></i>
                                     </el-col>
                                     <!-- 三级权限 -->
                                     <el-col :span="18">
                                         <el-tag 
-                                        closable
                                         type="warning" v-for="(item3, i3) in item2.children" :key="item3.id"
-                                        @close="removeRightById(item3.id)">
+                                        closable
+                                        @close="removeRightById(scope.row,item3.id)">
                                             {{item3.authName}}
                                         </el-tag>
                                     </el-col>
@@ -66,40 +69,51 @@ import { log } from 'util';
 
 <script>
 export default {
-    created(){
-        this.getRoleList()
-    },
-    data(){
-        return {
-            roleList:[]
-
-        }
-    },
-    methods:{
-        async getRoleList(){
-            const {data: res} = await this.$http.get('roles')
-
-            if(res.meta.status != 200){
-                return this.$message.error('获取角色列表失败')
-            }
-
-            this.roleList = res.data
-        },
-        async removeRightById(rightId){
-            const confirmResult = await this.$confirm('此操作将永久删除该权限, 是否继续?', '提示', {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            type: 'warning'
-            }).catch(err => err)
-
-            console.log(confirmResult);return;
-            if(confirmResult != 'confirm'){
-                return this.$message.info('取消了删除')
-            }
-
-            this.$message.success('确认删除')
-        }
+  created() {
+    this.getRoleList()
+  },
+  data() {
+    return {
+      roleList: []
     }
+  },
+  methods: {
+    async getRoleList() {
+      const { data: res } = await this.$http.get('roles')
+
+      if (res.meta.status != 200) {
+        return this.$message.error('获取角色列表失败')
+      }
+
+      this.roleList = res.data
+    },
+    async removeRightById(role, rightId) {
+      const confirmResult = await this.$confirm(
+        '此操作将永久删除该权限, 是否继续?',
+        '提示',
+        {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }
+      ).catch(err => err)
+
+      if (confirmResult != 'confirm') {
+        return this.$message.info('取消了删除')
+      }
+
+      const { data: res } = await this.$http.delete(
+        `roles/${role.id}/rights/${rightId}`
+      )
+
+      if (res.meta.status != 200) {
+        return this.$message.success('删除权限成功')
+      }
+
+      // this.getRoleList()
+      role.children = res.data
+    }
+  }
 }
 </script>
 
