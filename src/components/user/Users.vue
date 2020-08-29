@@ -60,7 +60,7 @@
     </el-card>
 
     <!-- 模态框 -->
-    <el-dialog title="提示" :visible.sync="dialogVisible" width="50%">
+    <el-dialog title="提示" :visible.sync="dialogVisible" width="50%" @close="addDialogClosed">
       <!-- 内容主体区域 -->
       <el-form :model="addForm" :rules="addFormRules" ref="addFormRef" label-width="70px">
         <el-form-item label="用户名" prop="username">
@@ -79,7 +79,7 @@
       <!-- 底部区域 -->
       <span slot="footer" class="dialog-footer">
         <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
+        <el-button type="primary" @click="addUser">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -91,71 +91,93 @@ export default {
     this.getUserList()
   },
   data() {
+    const checkEmail = (rule, value, cb) => {
+      const regEmail = /^\w+@\w+(\.\w+)+$/
+      if (regEmail.test(value)) {
+        return cb()
+      }
+      cb(new Error('请输入合法邮箱'))
+    }
+    const checkMobile = (rule, value, cb) => {
+      const regMobile = /^1[34578]\d{9}$/
+      if (regMobile.test(value)) {
+        return cb()
+      }
+      // 返回一个错误提示
+      cb(new Error('请输入合法的手机号码'))
+    }
     return {
       query: '',
       queryInfo: {
         query: '',
         pagenum: 1,
-        pagesize: 20,
+        pagesize: 20
       },
       userList: [],
       total: 0,
       dialogVisible: false,
       addForm: {
-        username:'',
-        password:'',
-        mobile:'',
-        email:'',
+        username: '',
+        password: '',
+        mobile: '',
+        email: ''
       },
       addFormRules: {
         username: [
           {
             required: true,
             message: '请输入用户名',
-            trigger: 'blur',
+            trigger: 'blur'
           },
           {
             max: 10,
             min: 3,
             message: '用户名的长度在3~10个字符之间',
-            trigger: 'blur',
-          },
+            trigger: 'blur'
+          }
         ],
-         password: [
+        password: [
           {
             required: true,
             message: '请输入密码',
-            trigger: 'blur',
+            trigger: 'blur'
           },
           {
             max: 15,
             min: 6,
             message: '密码的长度在6~15个字符之间',
-            trigger: 'blur',
-          },
+            trigger: 'blur'
+          }
         ],
-         email: [
+        email: [
           {
             required: true,
             message: '请输入邮箱',
-            trigger: 'blur',
+            trigger: 'blur'
+          },
+          {
+            validator: checkEmail,
+            trigger: 'blur'
           }
         ],
-         mobile: [
+        mobile: [
           {
             required: true,
             message: '请输入手机',
-            trigger: 'blur',
+            trigger: 'blur'
           },
-          
-        ],
-      },
+          {
+            validator: checkMobile,
+            trigger: 'blur'
+          }
+        ]
+      }
     }
   },
   methods: {
     async getUserList() {
       const { data: res } = await this.$http.get('users', {
-        params: this.queryInfo,
+        params: this.queryInfo
       })
       if (res.meta.status != 200) {
         return this.$message.error(res.meta.msg)
@@ -184,10 +206,16 @@ export default {
 
       return this.$message.success('更新用户状态成功')
     },
-    change() {
-      self.$forceUpdate()
+    addDialogClosed(){
+        this.$refs.addFormRef.resetFields()
     },
-  },
+    addUser(){
+        this.$refs.addFormRef.validate(valid => {
+            if(!valid) return
+            
+        })
+    }
+  }
 }
 </script>
 

@@ -1,11 +1,6 @@
-this.message.success('111');
-this.message.success('111');
-this.message.success('res.meta.msg');
-this.message.success(res.meta.msg);
-
-{ required: true, message:, trigger: 'blur'}
-
-{ required: true, message:, trigger: 'blur'}
-{ required: true, message:'hell', trigger: 'blur'}
-{ required: true, message:'heel', trigger: 'blur'}
-this.message.success(res.meta.msg);
+this.message.error('nihao')
+{required: true,message: 'nihao',trigger: 'blur'}
+'\w+(\.\w+)+$/'
+const regMobile = '\w+(\.\w+)+$/'
+const regMobile = '\w+(\.\w+)+$/'
+const regEmail = '/^\w+@\w+(\.\w+)+$/'
