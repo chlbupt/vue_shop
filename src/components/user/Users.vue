@@ -33,7 +33,7 @@
         </el-table-column>
         <el-table-column label="操作" width="180px">
           <template slot-scope="scope">
-            <el-button type="primary" icon="el-icon-edit" size="mini"></el-button>
+            <el-button type="primary" icon="el-icon-edit" size="mini" @click="showEditDialog(scope.row.id)"></el-button>
             <el-button type="danger" icon="el-icon-delete" size="mini"></el-button>
             <el-tooltip
               class="item"
@@ -59,8 +59,8 @@
       ></el-pagination>
     </el-card>
 
-    <!-- 模态框 -->
-    <el-dialog title="提示" :visible.sync="dialogVisible" width="50%" @close="addDialogClosed">
+    <!-- 添加对话框 -->
+    <el-dialog title="添加用户" :visible.sync="dialogVisible" width="50%">
       <!-- 内容主体区域 -->
       <el-form :model="addForm" :rules="addFormRules" ref="addFormRef" label-width="70px">
         <el-form-item label="用户名" prop="username">
@@ -80,6 +80,26 @@
       <span slot="footer" class="dialog-footer">
         <el-button @click="dialogVisible = false">取 消</el-button>
         <el-button type="primary" @click="addUser">确 定</el-button>
+      </span>
+    </el-dialog>
+    <!-- 编辑对话框 -->
+    <el-dialog title="修改用户" :visible.sync="editDialogVisible" width="50%" @close="editDialogClosed">
+      <!-- 内容主体区域 -->
+      <el-form :model="editForm" :rules="editFormRules" ref="editFormRef" label-width="70px">
+        <el-form-item label="用户名">
+          <el-input v-model="editForm.username" :disabled="true"></el-input>
+        </el-form-item>
+        <el-form-item label="邮箱" prop="email">
+          <el-input v-model="editForm.email"></el-input>
+        </el-form-item>
+        <el-form-item label="手机" prop="mobile">
+          <el-input v-model="editForm.mobile"></el-input>
+        </el-form-item>
+      </el-form>
+      <!-- 底部区域 -->
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="editDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="editUser">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -116,6 +136,7 @@ export default {
       userList: [],
       total: 0,
       dialogVisible: false,
+      editDialogVisible: false,
       addForm: {
         username: '',
         password: '',
@@ -171,7 +192,35 @@ export default {
             trigger: 'blur'
           }
         ]
-      }
+      },
+      editForm:{
+          email:'',
+            mobile:''
+      },
+      editFormRules: {
+        email: [
+          {
+            required: true,
+            message: '请输入邮箱',
+            trigger: 'blur'
+          },
+          {
+            validator: checkEmail,
+            trigger: 'blur'
+          }
+        ],
+        mobile: [
+          {
+            required: true,
+            message: '请输入手机',
+            trigger: 'blur'
+          },
+          {
+            validator: checkMobile,
+            trigger: 'blur'
+          }
+        ]
+      },
     }
   },
   methods: {
@@ -206,13 +255,55 @@ export default {
 
       return this.$message.success('更新用户状态成功')
     },
-    addDialogClosed(){
-        this.$refs.addFormRef.resetFields()
+    addDialogClosed() {
+      this.$refs.addFormRef.resetFields()
     },
-    addUser(){
-        this.$refs.addFormRef.validate(valid => {
-            if(!valid) return
-            
+    addUser() {
+      this.$refs.addFormRef.validate(async valid => {
+        if (!valid) return
+        const { data: res } = await this.$http.post('users', this.addForm)
+
+        if (res.meta.status != 201) {
+          return this.$message.error('添加用户失败')
+        }
+
+        this.$message.success('添加用户成功')
+
+        this.dialogVisible = false
+
+        this.getUserList()
+      })
+    },
+    async showEditDialog(userId) {
+        const {data: res} = await this.$http.get('users/'+ userId)
+
+        if(res.meta.status != 200){
+            return this.$message.error('查询用户信息失败')
+        }
+
+        this.editForm = res.data
+      this.editDialogVisible = true
+    },
+    editDialogClosed(){
+        this.$refs.editFormRef.resetFields()
+    },
+    editUser(){
+        this.$refs.editFormRef.validate(async valid => {
+            if(!valid) return;
+            const {data: res} = await this.$http.put('users/' + this.editForm.id, {
+                email: this.editForm.email,
+                mobile: this.editForm.mobile,
+            })
+
+            if(res.meta.status != 200){
+                return this.$message.error('更新信息失败')
+            }
+
+            this.$message.success('更新信息成功')
+
+            this.editDialogVisible = false
+
+            this.getUserList()
         })
     }
   }
