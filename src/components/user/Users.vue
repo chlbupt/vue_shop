@@ -34,7 +34,7 @@
         <el-table-column label="操作" width="180px">
           <template slot-scope="scope">
             <el-button type="primary" icon="el-icon-edit" size="mini" @click="showEditDialog(scope.row.id)"></el-button>
-            <el-button type="danger" icon="el-icon-delete" size="mini"></el-button>
+            <el-button type="danger" icon="el-icon-delete" size="mini" @click="delUser(scope.row.id)"></el-button>
             <el-tooltip
               class="item"
               effect="dark"
@@ -60,7 +60,7 @@
     </el-card>
 
     <!-- 添加对话框 -->
-    <el-dialog title="添加用户" :visible.sync="dialogVisible" width="50%">
+    <el-dialog title="添加用户" :visible.sync="dialogVisible" width="50%" @close="addFormClosed">
       <!-- 内容主体区域 -->
       <el-form :model="addForm" :rules="addFormRules" ref="addFormRef" label-width="70px">
         <el-form-item label="用户名" prop="username">
@@ -131,7 +131,7 @@ export default {
       queryInfo: {
         query: '',
         pagenum: 1,
-        pagesize: 20
+        pagesize: 5
       },
       userList: [],
       total: 0,
@@ -305,6 +305,30 @@ export default {
 
             this.getUserList()
         })
+    },
+    async delUser(userId){
+        const confirmResult = await this.$confirm('此操作将永久删除用户, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).catch(err => err);
+        
+        if(confirmResult != 'confirm'){
+            return this.$message.info('取消删除')
+        }
+
+        const {data: res} = await this.$http.delete('users/' + userId)
+
+        if(res.meta.status != 200){
+            return this.$message.error('删除用户失败')
+        }
+
+        this.$message.success('删除用户成功')
+
+        this.getUserList()
+    },
+    addFormClosed(){
+        this.$refs.addFormRef.resetFields()
     }
   }
 }

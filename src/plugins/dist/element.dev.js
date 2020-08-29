@@ -7,6 +7,7 @@ var _elementUi = require("element-ui");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 _vue["default"].prototype.$message = _elementUi.Message;
+_vue["default"].prototype.$confirm = _elementUi.MessageBox.confirm;
 
 _vue["default"].use(_elementUi.Button);
 
@@ -49,3 +50,5 @@ _vue["default"].use(_elementUi.Switch);
 _vue["default"].use(_elementUi.Tooltip);
 
 _vue["default"].use(_elementUi.Pagination);
+
+_vue["default"].use(_elementUi.Dialog);
