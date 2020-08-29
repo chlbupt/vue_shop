@@ -52,3 +52,5 @@ _vue["default"].use(_elementUi.Tooltip);
 _vue["default"].use(_elementUi.Pagination);
 
 _vue["default"].use(_elementUi.Dialog);
+
+_vue["default"].use(_elementUi.Tag);
