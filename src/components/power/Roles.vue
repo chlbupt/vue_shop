@@ -63,12 +63,12 @@
             </el-table>
         </el-card>
         <!-- 分配权限 -->
-        <el-dialog title="分配权限" :visible.sync="setRightDialogVisible" width="50%" >
+        <el-dialog title="分配权限" :visible.sync="setRightDialogVisible" width="50%" @close="setRightDialogClosed" >
             <!-- 树形控件 -->
-            <el-tree :data="rightList" :props="treeProps" node-key="id" show-checkbox default-expand-all :default-checked-keys="defkeys"></el-tree>
+            <el-tree :data="rightList" :props="treeProps" node-key="id" show-checkbox default-expand-all :default-checked-keys="defkeys" ref="rightListRef"></el-tree>
             <span slot="footer" class="dialog-footer">
                 <el-button @click="setRightDialogVisible = false">取 消</el-button>
-                <el-button type="primary" @click="setRightDialogVisible = false">确 定</el-button>
+                <el-button type="primary" @click="allotRight()">确 定</el-button>
             </span>
         </el-dialog>
     </div>
@@ -88,7 +88,8 @@ export default {
           children:'children',
           label:'authName',
       },
-      defkeys:[]
+      defkeys:[],
+      roleId:'',
     }
   },
   methods: {
@@ -128,6 +129,7 @@ export default {
       role.children = res.data
     },
     async showRightDialog(role) {
+        this.roleId = role.id
       const { data: res } = await this.$http.get('rights/tree')
 
       if (res.meta.status != 200) {
@@ -146,6 +148,27 @@ export default {
         node.children.forEach(item => {
             this.getLeafNode(item, arr)
         })
+    },
+    setRightDialogClosed(){
+        this.defkeys = []
+    },
+    async allotRight(){
+        const selectIds = [
+            ...this.$refs.rightListRef.getCheckedKeys(),
+            ...this.$refs.rightListRef.getHalfCheckedKeys(),
+        ]
+
+        const rids = selectIds.join(',')
+        
+        const {data: res} = await this.$http.post(`roles/${this.roleId}/rights`, {rids: rids})
+
+        if(res.meta.status != 200){
+            return this.$message.error('分配权限失败')
+        }
+        this.$message.success('分配权限成功')
+        this.getRoleList()
+
+        this.setRightDialogVisible = false
     }
   }
 }
