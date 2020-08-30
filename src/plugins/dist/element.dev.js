@@ -54,3 +54,5 @@ _vue["default"].use(_elementUi.Pagination);
 _vue["default"].use(_elementUi.Dialog);
 
 _vue["default"].use(_elementUi.Tag);
+
+_vue["default"].use(_elementUi.Tree);

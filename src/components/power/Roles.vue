@@ -2,9 +2,9 @@
     <div>
         <!-- 面包屑导航 -->
         <el-breadcrumb separator-class="el-icon-arrow-right">
-        <el-breadcrumb-item :to="{ path: '/home' }">首页</el-breadcrumb-item>
-        <el-breadcrumb-item>权限管理</el-breadcrumb-item>
-        <el-breadcrumb-item>角色列表</el-breadcrumb-item>
+            <el-breadcrumb-item :to="{ path: '/home' }">首页</el-breadcrumb-item>
+            <el-breadcrumb-item>权限管理</el-breadcrumb-item>
+            <el-breadcrumb-item>角色列表</el-breadcrumb-item>
         </el-breadcrumb>
         <!-- 卡片视图 -->
         <el-card>
@@ -20,30 +20,28 @@
             <el-table :data="roleList" border stripe>
                 <el-table-column type="expand">
                     <template slot-scope="scope">
-                        <el-row v-for="(item1, i1) in scope.row.children" :key="item1.id" :class="['bdbottom', i1 == 0 ? 'bdtop' : '', 'vcenter']">
+                        <el-row v-for="(item1, i1) in scope.row.children" :key="item1.id"
+                            :class="['bdbottom', i1 == 0 ? 'bdtop' : '', 'vcenter']">
                             <!-- 一级权限 -->
                             <el-col :span="5">
-                                <el-tag closable
-                                        @close="removeRightById(scope.row,item1.id)">{{item1.authName}}</el-tag>
+                                <el-tag closable @close="removeRightById(scope.row,item1.id)">{{item1.authName}}
+                                </el-tag>
                                 <i class="el-icon-caret-right"></i>
                             </el-col>
                             <!-- 二级和三级权限 -->
                             <el-col :span="19">
                                 <!-- 二级权限 -->
-                                <el-row v-for="(item2, i2) in item1.children" :key="item2.id" :class="[i2 == 0 ? '' : 'bdtop', 'vcenter']">
+                                <el-row v-for="(item2, i2) in item1.children" :key="item2.id"
+                                    :class="[i2 == 0 ? '' : 'bdtop', 'vcenter']">
                                     <el-col :span="6">
-                                        <el-tag type="success"
-                                        closable
-                                        @close="removeRightById(scope.row,item2.id)"
-                                        >{{item2.authName}}</el-tag>
+                                        <el-tag type="success" closable @close="removeRightById(scope.row,item2.id)">
+                                            {{item2.authName}}</el-tag>
                                         <i class="el-icon-caret-right"></i>
                                     </el-col>
                                     <!-- 三级权限 -->
                                     <el-col :span="18">
-                                        <el-tag 
-                                        type="warning" v-for="(item3, i3) in item2.children" :key="item3.id"
-                                        closable
-                                        @close="removeRightById(scope.row,item3.id)">
+                                        <el-tag type="warning" v-for="(item3, i3) in item2.children" :key="item3.id"
+                                            closable @close="removeRightById(scope.row,item3.id)">
                                             {{item3.authName}}
                                         </el-tag>
                                     </el-col>
@@ -55,15 +53,24 @@
                 <el-table-column type="index"></el-table-column>
                 <el-table-column label="角色名称" prop="roleName"></el-table-column>
                 <el-table-column label="角色描述" prop="roleDesc"></el-table-column>
-                <el-table-column label="操作" width="300px">
+                <el-table-column label="操作">
                     <template slot-scope="scope">
                         <el-button type="primary" size="mini" icon="el-icon-edit">编辑</el-button>
                         <el-button type="danger" size="mini" icon="el-icon-delete">删除</el-button>
-                        <el-button type="warning" size="mini" icon="el-icon-setting">分配权限</el-button>
+                        <el-button type="warning" size="mini" icon="el-icon-setting" @click="showRightDialog(scope.row)">分配权限</el-button>
                     </template>
                 </el-table-column>
             </el-table>
         </el-card>
+        <!-- 分配权限 -->
+        <el-dialog title="分配权限" :visible.sync="setRightDialogVisible" width="50%" >
+            <!-- 树形控件 -->
+            <el-tree :data="rightList" :props="treeProps" node-key="id" show-checkbox default-expand-all :default-checked-keys="defkeys"></el-tree>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="setRightDialogVisible = false">取 消</el-button>
+                <el-button type="primary" @click="setRightDialogVisible = false">确 定</el-button>
+            </span>
+        </el-dialog>
     </div>
 </template>
 
@@ -74,7 +81,14 @@ export default {
   },
   data() {
     return {
-      roleList: []
+      roleList: [],
+      setRightDialogVisible: false,
+      rightList: [],
+      treeProps:{
+          children:'children',
+          label:'authName',
+      },
+      defkeys:[]
     }
   },
   methods: {
@@ -112,6 +126,26 @@ export default {
 
       // this.getRoleList()
       role.children = res.data
+    },
+    async showRightDialog(role) {
+      const { data: res } = await this.$http.get('rights/tree')
+
+      if (res.meta.status != 200) {
+        return this.message.error('获取权限列表失败')
+      }
+      this.rightList = res.data
+      this.getLeafNode(role, this.defkeys)
+
+      this.setRightDialogVisible = true
+    },
+    getLeafNode(node, arr){
+        if(!node.children){
+            return arr.push(node.id)
+        }
+
+        node.children.forEach(item => {
+            this.getLeafNode(item, arr)
+        })
     }
   }
 }
@@ -121,6 +155,7 @@ export default {
 .el-tag {
   margin: 7px;
 }
+
 .bdtop {
   border-top: 1px solid #eee;
 }
@@ -128,6 +163,7 @@ export default {
 .bdbottom {
   border-bottom: 1px solid #eee;
 }
+
 .vcenter {
   display: flex;
   align-items: center;
