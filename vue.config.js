@@ -1,7 +1,7 @@
 module.exports = {
   runtimeCompiler: true,
   lintOnSave: false,
-  chainWebpack:config => {
+  chainWebpack: config => {
     // 线上环境
     config.when(process.env.NODE_ENV == "production", config => {
       config.entry('app').clear().add('./src/main-prod.js')
@@ -30,5 +30,17 @@ module.exports = {
         return args
       })
     })
+  },
+  devServer: {
+    proxy: {
+      '/api/v1': {
+        target: 'http://ydkp.ekola.cn/api/v1/',
+        ws: true,
+        changeOrigin: true,
+        pathRewrite: {
+          "^/api/v1": '',
+        }
+      }
+    }
   }
 }

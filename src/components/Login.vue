@@ -27,12 +27,14 @@
 </template>
 
 <script>
+import {LOGIN} from '../util/api.js'
+
 export default {
   data() {
     return {
       loginForm: {
         username: 'admin',
-        password: '123456'
+        password: 'password'
       },
       loginFormRules: {
         username: [
@@ -55,7 +57,7 @@ export default {
         if (!valid) {
           return false
         }
-        const { data: res } = await this.$http.post('login', this.loginForm)
+        const { data: res } = await this.$http.post(LOGIN, this.loginForm)
         if (res.meta.status != 200) return this.$message.error('登陆失败')
 
         // 登录成功逻辑
