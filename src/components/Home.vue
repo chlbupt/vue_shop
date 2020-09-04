@@ -4,7 +4,7 @@
         <el-header>
         <div>
           <img src="../assets/logo.png" alt="">
-          <span>电商后台管理系统</span>
+          <span>移动开屏管理系统</span>
         </div>
           <el-button type="info" @click="logout">退出</el-button>
         </el-header>
@@ -18,7 +18,7 @@
               <el-submenu :index="item.id+''" v-for="item in menulist" :key="item.id">
                 <!-- 一级菜单模板区 -->
                 <template slot="title">
-                  <i :class="icons[item.id]"></i>
+                  <i :class="item.icons"></i>
                   <span>{{item.authName}}</span>
                 </template>
                 <!-- 二级菜单 -->
@@ -39,17 +39,11 @@
 </template>
 
 <script>
+import {MENUS} from '../util/api.js'
 export default {
   data() {
     return {
       menulist: [],
-      icons: {
-        '125': 'iconfont icon-user',
-        '103': 'iconfont icon-tijikongjian',
-        '101': 'iconfont icon-shangpin',
-        '102': 'iconfont icon-danju',
-        '145': 'iconfont icon-baobiao'
-      },
       isCollapse: false,
       activePath: '',
     }
@@ -65,7 +59,7 @@ export default {
     },
     // 获取所有的菜单
     async getMenuList() {
-      const { data: res } = await this.$http.get('menus')
+      const { data: res } = await this.$http.get(MENUS)
       if (res.meta.status !== 200) {
         return this.$message.error(res.meta.msg)
       }
