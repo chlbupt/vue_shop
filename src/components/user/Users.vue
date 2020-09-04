@@ -116,6 +116,7 @@
 </template>
 
 <script>
+  import {USERS} from '@/util/api.js'
   export default {
     created() {
       this.getUserList()
@@ -239,7 +240,7 @@
     },
     methods: {
       async getUserList() {
-        const { data: res } = await this.$http.get('users', {
+        const { data: res } = await this.$http.get(USERS, {
           params: this.queryInfo
         })
         if (res.meta.status != 200) {
@@ -258,8 +259,9 @@
         this.getUserList()
       },
       async userStateChanged(userInfo) {
+        const state = userInfo.mg_state === true ? 1 : 0;
         const { data: res } = await this.$http.put(
-          `/users/${userInfo.id}/state/${userInfo.mg_state}`
+          `/${USERS}/${userInfo.id}/state/${state}`
         )
 
         if (res.meta.status != 200) {
