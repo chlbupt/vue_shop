@@ -8,6 +8,8 @@ import './assets/fonts/iconfont.css'
 import './assets/css/global.css'
 // 引入axios
 import axios from './util/http.js'
+// 引入format
+// import format from './util/format.js'
 
 Vue.prototype.$http = axios
 
